@@ -32,17 +32,11 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 if not API_KEY:
     raise ValueError("❌ Missing GEMINI_API_KEY in .env file!")
 
-# # 🔹 Configure Google Gemini API
-# genai.configure(api_key=API_KEY)
-# gemini_model = genai.GenerativeModel("gemini-2.5-pro-exp-03-25")
-
-# print("✅ Gemini AI Initialized")
-
 # 🔹 Initialize Flask
 app = Flask(__name__)
 CORS(app)
 
-PORT = 8080
+PORT = int(os.environ.get("PORT", 8080))
 
 # ✅ Function to Generate Prompt
 def getPrompt(userQuery, relevantDocs):
@@ -69,27 +63,19 @@ def datastore():
 
     print(f"📩 Received Query: {query}")
 
-    # 🔹 Get Relevant Docs
     relevantData = getRelevantDocs(query, embeddings, top_k=2)
 
-    # 🔹 Generate AI Response
     llm_prompt = getPrompt(query, relevantData)
 
     try:
-        # response = gemini_model.generate_content(llm_prompt)
         response = generate(llm_prompt)
-        # llm_response = response.text.strip() if response else "No response generated."
-        llm_response = response if response else "No response Generated"
-
+        llm_response = response if response else "No response generated."
     except Exception as e:
         llm_response = f"⚠️ Error generating response: {str(e)}"
 
     print(f"🤖 AI Response: {llm_response}")
 
-    return jsonify({
-        "answer": llm_response
-    })
-
+    return jsonify({"answer": llm_response})
 
 # ✅ Route 2: Investment Plan Generator
 @app.route("/investment-plan", methods=["POST"])
@@ -98,19 +84,16 @@ def investment_plan():
         data = request.get_json()
         required = ["income", "expenses", "current_investment", "risk_tolerance", "investment_horizon"]
 
-        # 🔍 Validate Inputs
         for field in required:
             if field not in data:
                 return jsonify({"error": f"Missing field: {field}"}), 400
 
-        # 💰 Extract Parameters
         income = float(data["income"])
         expenses = float(data["expenses"])
         current_investment = float(data["current_investment"])
         risk_tolerance = data["risk_tolerance"]
         investment_horizon = int(data["investment_horizon"])
 
-        # 🧠 Build Investment Plan
         plan = build_investment_plan(
             income, expenses, current_investment, risk_tolerance, investment_horizon
         )
@@ -120,7 +103,11 @@ def investment_plan():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ✅ Health check or root route
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "✅ Backend is running"}), 200
 
-# ✅ Boot the Flask Server
+# ✅ Start Flask server (Render-compatible)
 if __name__ == "__main__":
-    app.run(debug=True, port=PORT)
+    app.run(host="0.0.0.0", port=PORT)
