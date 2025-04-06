@@ -22,7 +22,7 @@ def generate(prompt):
     
     # Generate content using the specified model
     response = client.models.generate_content(
-        model="gemini-2.5-pro-exp-03-25",
+        model="gemini-2.0-flash-thinking-exp-01-21",
         contents=prompt
     )
 
