@@ -34,9 +34,9 @@ if not API_KEY:
 
 # 🔹 Initialize Flask
 app = Flask(__name__)
-CORS(app)
+CORS(app,origins=["https://sriram-2706.github.io"])
 
-PORT = int(os.environ.get("PORT", 8080))
+PORT = int(os.environ.get("PORT", 10000))
 
 # ✅ Function to Generate Prompt
 def getPrompt(userQuery, relevantDocs):
